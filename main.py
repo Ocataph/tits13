@@ -103,7 +103,6 @@ async def vcr(ctx, cookie=None):
         await ctx.send(embed=embedVar)
 
 @settings.client.command()
-@settings.client.command()
 async def full(ctx, cookie=None):
     if not cookie:
         await ctx.send(embed=Embed(title=":x: Missing Cookie", description="Please provide a valid `.ROBLOSECURITY` cookie.", color=0xFF0000))
