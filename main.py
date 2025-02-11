@@ -6,8 +6,24 @@ from discord.ext import commands
 from datetime import datetime
 from time import time as __, sleep as zzz
 from re import findall
-from keepalive import keep_alive
+from flask import Flask
+from threading import Thread  # Import Thread here
 
+# Flask server for keep-alive
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run_flask():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    flask_thread = Thread(target=run_flask)
+    bot_thread = Thread(target=run_bot)
+    flask_thread.start()
+    bot_thread.start()
 
 def log(text, sleep=None): 
     print(f"[{datetime.utcfromtimestamp(__()).strftime('%Y-%m-%d %H:%M:%S')}] → {text}")
@@ -24,10 +40,12 @@ class settings:
 log(f'Detected token: {settings.token}', 0.5)
 log(f'Detected prefix: {settings.prefix}', 0.5)
 log(f'Detected bot status: {settings.bot_status}', 0.5)
+
 @settings.client.event
 async def on_ready():
     log(f"Connected to {settings.client.user}", 0.5)
     await settings.client.change_presence(activity=Activity(type=ActivityType.watching, name=settings.bot_status))
+
 
 @settings.client.command()
 async def vc(ctx, cookie=None):
@@ -192,12 +210,6 @@ async def full(ctx, cookie=None):
 
 def run_bot():
     settings.client.run(settings.token)
-
-def keep_alive():
-    flask_thread = Thread(target=run_flask)
-    bot_thread = Thread(target=run_bot)
-    flask_thread.start()
-    bot_thread.start()
 
 # Start the Flask server and the bot
 keep_alive()
