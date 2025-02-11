@@ -210,7 +210,7 @@ elif 'Unauthorized' in response.text:
     await interaction.followup.send(embed=embedVar)
 else:
     log(f'User    {interaction.user} used /full but Roblox returned a bad response.')
-    embedVar = Embed(title=":x: Error", description="", color=0x FFFF00)
+    embedVar = Embed(title=":x: Error", description="", color=0xFFFF00)
     embedVar.add_field(name="Error: ", value='```'+response.text+'```', inline=False)
     await interaction.followup.send(embed=embedVar)
 
