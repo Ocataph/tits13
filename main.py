@@ -214,3 +214,6 @@ def run_bot():
 
 # Start the Flask server and the bot
 keep_alive()
+
+# Start the bot
+run_bot()
