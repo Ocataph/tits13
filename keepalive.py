@@ -1,7 +1,7 @@
 from flask import Flask
 from threading import Thread
 
-app = Flask('')
+app = Flask('https://tits13.onrender.com')
 
 @app.route('/')
 def home():
