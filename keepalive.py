@@ -1,7 +1,6 @@
 from flask import Flask
 from threading import Thread
 
-# Flask server for keep-alive
 app = Flask(__name__)
 
 @app.route('/')
