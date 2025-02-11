@@ -103,37 +103,43 @@ async def vcr(ctx, cookie=None):
         await ctx.send(embed=embedVar)
 
 @settings.client.command()
+@settings.client.command()
 async def full(ctx, cookie=None):
     if not cookie:
         await ctx.send(embed=Embed(title=":x: Missing Cookie", description="Please provide a valid `.ROBLOSECURITY` cookie.", color=0xFF0000))
         return
 
     headers = {"User-Agent": "Mozilla/5.0"}
-    hidden = '```                       Hidden                  ```'
-
-    # Fetch authenticated user data
-    response = get('https://users.roblox.com/v1/users/authenticated', cookies={'.ROBLOSECURITY': cookie})
     hidden = '``` Hidden ```'
 
+    response = get('https://users.roblox.com/v1/users/authenticated', cookies={'.ROBLOSECURITY': cookie})
+    
     if '"id":' in response.text:
-        user_id = response.json()['id']
-        robux = get(f'https://economy.roblox.com/v1/users/{user_id}/currency', cookies={'.ROBLOSECURITY': cookie}).json()['robux']
+        user_id = response.json().get('id')
+        robux = get(f'https://economy.roblox.com/v1/users/{user_id}/currency', cookies={'.ROBLOSECURITY': cookie}).json().get('robux', 'N/A')
+        
         balance_credit_info = get(f'https://billing.roblox.com/v1/credit', cookies={'.ROBLOSECURITY': cookie})
-        balance_credit_currency = balance_credit_info.json().get('currencyCode', 'N/A')  # Safely access 'currencyCode'
+        balance_credit_currency = balance_credit_info.json().get('currencyCode', 'N/A')
+        
         account_settings = get(f'https://www.roblox.com/my/settings/json', cookies={'.ROBLOSECURITY': cookie})
 
-        # Print the account settings response for debugging
-        log(f"Account Settings Response: {account_settings.json()}")
+        # **FIX: Check if response is empty or invalid**
+        try:
+            account_settings_data = account_settings.json()
+        except requests.exceptions.JSONDecodeError:
+            await ctx.send(embed=Embed(title=":x: Error", description="Failed to fetch account settings. Roblox may be down.", color=0xFF0000))
+            return
 
-        account_name = account_settings.json().get('Name', 'N/A')
-        account_display_name = account_settings.json().get('DisplayName', 'N/A')
-        account_email_verified = account_settings.json().get('IsEmailVerified', False)
-        user_email = account_settings.json().get('UserEmail', 'N/A')  # Use .get() to avoid KeyError
+        account_name = account_settings_data.get('Name', 'N/A')
+        account_display_name = account_settings_data.get('DisplayName', 'N/A')
+        account_email_verified = account_settings_data.get('IsEmailVerified', False)
+        user_email = account_settings_data.get('UserEmail', 'N/A')
 
         if account_email_verified:
             account_email_verified = f'True (`{user_email}`)'
         else:
             account_email_verified = 'False'
+
 
         account_above_13 = account_settings.json().get('UserAbove13', 'N/A')
         account_age_in_years = round(float(account_settings.json().get('AccountAgeInDays', 0) / 365), 2)
