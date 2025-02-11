@@ -6,24 +6,7 @@ from discord.ext import commands
 from datetime import datetime
 from time import time as __, sleep as zzz
 from re import findall
-from flask import Flask
-from threading import Thread  # Import Thread here
-
-# Flask server for keep-alive
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is alive!"
-
-def run_flask():
-    app.run(host='0.0.0.0', port=8080)
-
-def keep_alive():
-    flask_thread = Thread(target=run_flask)
-    bot_thread = Thread(target=run_bot)
-    flask_thread.start()
-    bot_thread.start()
+from keepalive import keep_alive  # Import the keep_alive function
 
 def log(text, sleep=None): 
     print(f"[{datetime.utcfromtimestamp(__()).strftime('%Y-%m-%d %H:%M:%S')}] → {text}")
