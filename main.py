@@ -108,7 +108,11 @@ async def full(ctx, cookie=None):
         await ctx.send(embed=Embed(title=":x: Missing Cookie", description="Please provide a valid `.ROBLOSECURITY` cookie.", color=0xFF0000))
         return
 
-    await ctx.message.delete()
+    try:
+        await ctx.message.delete()
+    except discord.errors.NotFound:
+        pass  # Ignore the error if the message is already deleted
+
     headers = {"User-Agent": "Mozilla/5.0"}
     hidden = '```                       Hidden                  ```'
 
@@ -220,7 +224,6 @@ async def full(ctx, cookie=None):
         embedVar = Embed(title=":x: Error", description="", color=0xFFFF00)
         embedVar.add_field(name="Error: ", value='```' + response.text + '```', inline=False)
         await ctx.send(embed=embedVar)
-
 def run_bot():
     settings.client.run(settings.token)
 
