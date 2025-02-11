@@ -195,7 +195,7 @@ async def full(ctx, cookie=None):
 def run_bot():
     settings.client.run(settings.token)
 
-# Start the Flask server and the bot
+# Start the keep-alive server
 keep_alive()
 
 # Start the bot
