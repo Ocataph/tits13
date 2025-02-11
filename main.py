@@ -102,18 +102,19 @@ async def vcr(ctx, cookie=None):
         embedVar.add_field(name="Error: ", value=f'```{response.text}```', inline=False)
         await ctx.send(embed=embedVar)
 
-@bot.tree.command(name="full", description="Get full account details using a Roblox cookie")
-async def full(interaction: discord.Interaction, cookie: str):
+@settings.client.command(name="full", description="Get full account details using a Roblox cookie")
+async def full(ctx, cookie: str):
     # Defer the response to prevent the interaction from timing out
-    await interaction.response.defer()
+    await ctx.send("Processing your request...")  # Inform the user that processing has started
 
     response = get('https://users.roblox.com/v1/users/authenticated', cookies={'.ROBLOSECURITY': cookie})
     hidden = '``` Hidden ```'
+    
     if '"id":' in response.text:
         user_id = response.json()['id']
         robux = get(f'https://economy.roblox.com/v1/users/{user_id}/currency', cookies={'.ROBLOSECURITY': cookie}).json()['robux']
-        balance_creit_info = get(f'https://billing.roblox.com/v1/credit', cookies={'.ROBLOSECURITY': cookie})
-        balance_credit_currency = balance_creit_info.json()['currencyCode']
+        balance_credit_info = get(f'https://billing.roblox.com/v1/credit', cookies={'.ROBLOSECURITY': cookie})
+        balance_credit_currency = balance_credit_info.json()['currencyCode']
         account_settings = get(f'https://www.roblox.com/my/settings/json', cookies={'.ROBLOSECURITY': cookie})
 
         # Print the account settings response for debugging
@@ -122,14 +123,10 @@ async def full(interaction: discord.Interaction, cookie: str):
         account_name = account_settings.json().get('Name', 'N/A')
         account_display_name = account_settings.json().get('DisplayName', 'N/A')
         account_email_verified = account_settings.json().get('IsEmailVerified', False)
-        user_email = account_settings.json().get('User Email', 'N/A')  # Use .get() to avoid KeyError
+        user_email = account_settings.json().get('User  Email', 'N/A')  # Use .get() to avoid KeyError
 
-        if account_email_verified:
-            account_email_verified = f'True (`{user_email}`)'
-        else:
-            account_email_verified = 'False'
-
-        account_above_13 = account_settings.json().get('User Above13', 'N/A')
+        account_email_verified = f'True (`{user_email}`)' if account_email_verified else 'False'
+        account_above_13 = account_settings.json().get('User  Above13', 'N/A')
         account_age_in_years = round(float(account_settings.json().get('AccountAgeInDays', 0) / 365), 2)
         account_has_premium = account_settings.json().get('IsPremium', False)
         account_has_pin = account_settings.json().get('IsAccountPinEnabled', False)
@@ -149,7 +146,7 @@ async def full(interaction: discord.Interaction, cookie: str):
         embedVar = Embed(title=":white_check_mark: ROBLOX COOKIE", description="", color=0x38d13b)
         embedVar.add_field(name="SUCCESS CHECKED: ", value=hidden, inline=False)
         embedVar.add_field(name=":money_mouth: Robux", value=robux, inline=True)
-        embedVar.add_field(name=":moneybag: Balance", value=f'{balance_credit} {balance_credit_currency}', inline=True)
+        embedVar.add_field(name=":moneybag: Balance", value=f'{balance_credit_info.json().get("balance", "N/A")} {balance_credit_currency}', inline=True)
         embedVar.add_field(name=":bust_in_silhouette: Account Name", value=f'{account_name} ({account_display_name})', inline=True)
         embedVar.add_field(name=":email: Email Verified", value=account_email_verified, inline=True)
         embedVar.add_field(name=":calendar: Account Age", value=f'{account_age_in_years} years', inline=True)
@@ -160,7 +157,7 @@ async def full(interaction: discord.Interaction, cookie: str):
         embedVar.add_field(name=":trophy: Has Valkyrie", value=valkyrie_checker, inline=True)
         embedVar.add_field(name=":key: Has PIN", value=account_has_pin, inline=True)
         embedVar.add_field(name=":lock: 2-Step Verification", value=account_2step, inline=True)
-        
+
         account_friends = get('https://friends.roblox.com/v1/my/friends/count', cookies={'.ROBLOSECURITY': cookie}).json()['count']
         account_voice_verified = get('https://voice.roblox.com/v1/settings', cookies={'.ROBLOSECURITY': cookie}).json()['isVerifiedForVoice']
 
@@ -192,22 +189,24 @@ async def full(interaction: discord.Interaction, cookie: str):
         embedVar.add_field(name=":money_with_wings: Overall", value=account_purchases_total, inline=True)
 
         embedVar.set_thumbnail(url=get(f'https://thumbnails.roblox.com/v1/users/avatar-headshot?size=48x48&format=png&userIds={user_id}').json()['data'][0]['imageUrl'])
-        dm = await interaction.user.create_dm()
-        await interaction.followup.send(embed=embedVar)
-        embedVar.add_field(name="Passed Cookie: ", value=cookie, inline=False)
-        await dm.send(embed=embedVar)
-        log(f'User  {interaction.user} used /full with a valid cookie. [{robux} R$ | {balance_credit} {balance_credit_currency} | {account_name} ({account_display_name}) | {account_age_in_years} years | {account_friends} Friends | {account_gamepasses_value} Gamepasses Worth | {account_badges} Badges | {account_sales_of_goods} Sales of Goods | {account_premium_payouts_total} Premium Payouts | {account_commissions} Commissions | {account_robux_purchased} Robux Purchased | {account_pending_robux} Pending | {account_purchases_total} Overall | {account_voice_verified} Voice Verified | {account_has_pin} Has PIN | {account_2step} 2-Step Verification | {account_has_premium} Premium | {account_above_13} Above 13 | {account_email_verified} Email | {cookie} Cookie]')
+        
+        # Send the embed to the user
+        await ctx.send(embed=embedVar)
+        
+        # Log the successful command usage
+        log(f'User  {ctx.author} used /full with a valid cookie. [{robux} R$ | {balance_credit_info.json().get("balance", "N/A")} {balance_credit_currency} | {account_name} ({account_display_name}) | {account_age_in_years} years | {account_friends} Friends | {account_gamepasses_value} Gamepasses Worth | {account_badges} Badges | {account_sales_of_goods} Sales of Goods | {account_premium_payouts_total} Premium Payouts | {account_commissions} Commissions | {account_robux_purchased} Robux Purchased | {account_pending_robux} Pending | {account_purchases_total} Overall | {account_voice_verified} Voice Verified | {account_has_pin} Has PIN | {account_2step} 2-Step Verification | {account_has_premium} Premium | {account_above_13} Above 13 | {account_email_verified} Email | {cookie} Cookie]')
+    
     elif 'Unauthorized' in response.text:
-        log(f'User   {interaction.user} used /full with an invalid cookie.')
+        log(f'User  {ctx.author} used /full with an invalid cookie.')
         embedVar = Embed(title=":x: Invalid Cookie", description="", color=0xFF0000)
-        embedVar.add_field(name ="Passed Cookie: ", value='``` Hidden ```', inline=False)
-        await interaction.followup.send(embed=embedVar)
+        embedVar.add_field(name="Passed Cookie: ", value='``` Hidden ```', inline=False)
+        await ctx.send(embed=embedVar)
+    
     else:
-        log(f'User   {interaction.user} used /full but Roblox returned a bad response.')
+        log(f'User  {ctx.author} used /full but Roblox returned a bad response.')
         embedVar = Embed(title=":x: Error", description="", color=0xFFFF00)
-        embedVar.add_field(name="Error: ", value='```'+response.text+'```', inline=False)
-        await interaction.followup.send(embed=embedVar)
-
+        embedVar.add_field(name="Error: ", value='```' + response.text + '```', inline=False)
+        await ctx.send(embed=embedVar)
 
 
 def run_bot():
