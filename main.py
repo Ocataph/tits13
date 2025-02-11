@@ -47,6 +47,7 @@ async def on_ready():
     await settings.client.change_presence(activity=Activity(type=ActivityType.watching, name=settings.bot_status))
 
 
+
 @settings.client.command()
 async def vc(ctx, cookie=None):
     if not cookie:
