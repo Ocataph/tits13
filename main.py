@@ -106,7 +106,7 @@ async def vcr(ctx, cookie=None):
 
 
 
-@settings.tree.command(name="full", description="Get full account details using a Roblox cookie")
+@settings.client.tree.command(name="full", description="Get full account details using a Roblox cookie")
 async def full(interaction: discord.Interaction, cookie: str):
     await interaction.response.defer()
 
