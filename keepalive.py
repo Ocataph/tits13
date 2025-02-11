@@ -1,15 +1,16 @@
-from flask import Flask,render_template
+from flask import Flask
 from threading import Thread
 
-app = Flask('__name__')
+# Flask server for keep-alive
+app = Flask(__name__)
 
 @app.route('/')
 def home():
     return "Bot is alive!"
 
-def run():
+def run_flask():
     app.run(host='0.0.0.0', port=8080)
 
 def keep_alive():
-    t = Thread(target=run)
-    t.start()
+    flask_thread = Thread(target=run_flask)
+    flask_thread.start()
