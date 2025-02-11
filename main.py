@@ -190,5 +190,14 @@ async def full(ctx, cookie=None):
     log(f'User  {ctx.author} used {settings.prefix}full with a valid cookie.')
 
 
-# Start bot
-settings.client.run(settings.token)
+def run_bot():
+    settings.client.run(settings.token)
+
+def keep_alive():
+    flask_thread = Thread(target=run_flask)
+    bot_thread = Thread(target=run_bot)
+    flask_thread.start()
+    bot_thread.start()
+
+# Start the Flask server and the bot
+keep_alive()
