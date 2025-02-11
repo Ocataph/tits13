@@ -119,7 +119,7 @@ async def full(ctx, cookie=None):
         user_id = response.json()['id']
         robux = get(f'https://economy.roblox.com/v1/users/{user_id}/currency', cookies={'.ROBLOSECURITY': cookie}).json()['robux']
         balance_credit_info = get(f'https://billing.roblox.com/v1/credit', cookies={'.ROBLOSECURITY': cookie})
-        balance_credit_currency = balance_credit_info.json()['currencyCode']
+        balance_credit_currency = balance_credit_info.json().get('currencyCode', 'N/A')  # Safely access 'currencyCode'
         account_settings = get(f'https://www.roblox.com/my/settings/json', cookies={'.ROBLOSECURITY': cookie})
 
         # Print the account settings response for debugging
@@ -220,11 +220,12 @@ async def full(ctx, cookie=None):
         embedVar.add_field(name="Error: ", value='```' + response.text + '```', inline=False)
         await ctx.send(embed=embedVar)
 
-    # Delete the original message after processing
-    try:
-        await ctx.message.delete()
-    except discord.errors.NotFound:
-        pass  # Ignore if the message is already deleted
+    # Delete the original message if the command is executed in a guild
+    if ctx.guild:  # Check if the command is executed in a guild
+        try:
+            await ctx.message.delete()
+        except discord.errors.NotFound:
+            pass  # Ignore if the message is already deleted
 
 
 def run_bot():
